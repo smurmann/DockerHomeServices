@@ -1,0 +1,1 @@
+docker-compose -f ~/docker/services/plex/docker-compose.yaml up -d

@@ -1,0 +1,20 @@
+version: "3.2"
+services:
+  plex:
+      image: linuxserver/plex
+      container_name: plex
+      network_mode: host
+      environment:
+        - PUID=1000
+        - PGID=999
+        - VERSION=docker
+      volumes:
+        -  ${USERDIR}/docker/plex:/config
+        -  ${USERDIR}/docker/shared:/shared
+        #transcode to ram
+        - /dev/shm:/transcode
+        #mount setup to network share
+        - /mnt/plex-media:/data:ro
+        # - ${USERDIR}/services/plex:/data:ro
+      restart: unless-stopped
+      

@@ -1,1 +1,2 @@
-docker network create traefik_proxy
+docker network create proxy
+docker-compose up -d

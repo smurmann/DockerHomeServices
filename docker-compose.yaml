@@ -14,7 +14,7 @@ services:
         build: ./caddy/dns-dockerfile
         container_name: caddy
         hostname: caddy
-        restart: unless-stopped
+        restart: always
         ports:
           - "80:80"
           - "443:443"
@@ -25,7 +25,25 @@ services:
           - ${USERDIR}/docker/services/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
           - ${USERDIR}/docker/services/caddy/data:/data
           - ${USERDIR}/docker/services/caddy/config:/config
-    
+
+    heimdall:
+        image: linuxserver/heimdall
+        hostname: heimdall
+        container_name: heimdall
+        restart: always
+        ports:
+            - "${HEIMDALL_PORT80}:80"
+            - "${HEIMDALL_PORT443}:443"
+        volumes:
+            - ${USERDIR}/docker/heimdall/config:/config
+        environment:
+            - TZ=${TZ}
+            - PUID=${PUID}
+            - PGID=${PGID}
+        networks:
+            - proxy
+              
+
     # Docker monitoring
     portainer:
         image: portainer/portainer
@@ -261,6 +279,8 @@ services:
 
     # Game Services
     minecraft:
+        hostname: minecraft
+        container_name: minecraft
         image: itzg/minecraft-server
         ports:
             - "${MINECRAFT_PORT}:25565"
@@ -273,44 +293,46 @@ services:
             RCON_PASSWORD: "testing"
             RCON_PORT: 28016
         restart: always
-    rcon:
-        image: itzg/rcon
-        ports:
-            - "4326:4326"
-            - "4327:4327"
-        volumes:
-            - "${USERDIR}/docker/minecraft/server:/opt/rcon-web-admin/db"
-        environment:
-            RWA_PASSWORD : "testing"
+    # rcon:
+    #     hostname: rcon
+    #     container_name: rcon
+    #     image: itzg/rcon
+    #     ports:
+    #         - "4326:4326"
+    #         - "4327:4327"
+    #     volumes:
+    #         - "${USERDIR}/docker/minecraft/server:/opt/rcon-web-admin/db"
+    #     environment:
+    #         RWA_PASSWORD : "testing"
 
-    ark:
-        container_name: ark
-        image: peet2k17/ark
-        environment:
-            - SESSIONNAME=${ARK_SESSIONNAME}
-            - SERVERMAP=${ARK_SERVERMAP}
-            - MAX_PLAYERS=5
-            - SERVERPASSWORD=${ARK_SERVERPW}
-            - ADMINPASSWORD=${ARK_ADMINPW}
-            - SERVERPORT=27015
-            - STEAMPORT=7778
-            - BACKUPONSTART=0
-            - BACKUPONSTOP=1
-            - WARNONSTOP=1
-            - UPDATEONSTART=1
-            - TZ=UTC
-            - ARK_GID=1000
-            - ARK_UID=1000
-        volumes:
-            - ${USERDIR}/docker/ark/server:/ark
-        ports:
-            - 7778:7778/udp
-            - 7778:7778
-            - 7777:7777/udp
-            - 7777:7777
-            - 27015:27015/udp
-            - 27015:27015
-            - 32330:32330
+    # ark:
+    #     container_name: ark
+    #     image: peet2k17/ark
+    #     environment:
+    #         - SESSIONNAME=${ARK_SESSIONNAME}
+    #         - SERVERMAP=${ARK_SERVERMAP}
+    #         - MAX_PLAYERS=5
+    #         - SERVERPASSWORD=${ARK_SERVERPW}
+    #         - ADMINPASSWORD=${ARK_ADMINPW}
+    #         - SERVERPORT=27015
+    #         - STEAMPORT=7778
+    #         - BACKUPONSTART=0
+    #         - BACKUPONSTOP=1
+    #         - WARNONSTOP=1
+    #         - UPDATEONSTART=1
+    #         - TZ=UTC
+    #         - ARK_GID=1000
+    #         - ARK_UID=1000
+    #     volumes:
+    #         - ${USERDIR}/docker/ark/server:/ark
+    #     ports:
+    #         - 7778:7778/udp
+    #         - 7778:7778
+    #         - 7777:7777/udp
+    #         - 7777:7777
+    #         - 27015:27015/udp
+    #         - 27015:27015
+    #         - 32330:32330
 
     # WIP
     # jenkins:
@@ -332,16 +354,3 @@ services:
     #         - JAVA_OPTS="-Djava.awt.headless=true"
     #     user: ${PUID}
     #     privileged: true
-    #     labels:
-    #         - "traefik.enable=true"
-    #         - "traefik.http.routers.jenkins.entrypoints=http"
-    #         - "traefik.http.routers.jenkins.rule=Host(`jenkins.${DOMAINNAME}`)"
-    #         - "traefik.http.middlewares.jenkins-https-redirect.redirectscheme.scheme=https"
-    #         - "traefik.http.routers.jenkins.middlewares=jenkins-https-redirect"
-    #         - "traefik.http.routers.jenkins-secure.entrypoints=https"
-    #         - "traefik.http.routers.jenkins-secure.rule=Host(`jenkins.${DOMAINNAME}`)"
-    #         - "traefik.http.routers.jenkins-secure.tls=true"
-    #         - "traefik.http.routers.jenkins-secure.tls.certresolver=http"
-    #         - "traefik.http.routers.jenkins-secure.service=jenkins"
-    #         - "traefik.http.services.jenkins.loadbalancer.server.port=${JENKINSWEB_PORT}"
-    #         - "traefik.docker.network=proxy"
